@@ -12,10 +12,15 @@ async function seedDummyData() {
     const officer = await User.findOne({ role: 'procurement_officer' });
     const manager = await User.findOne({ role: 'manager' });
     const vendorUser = await User.findOne({ role: 'vendor' });
-    const existingVendor = await Vendor.findOne({ linkedUserId: vendorUser._id });
 
     if (!admin || !officer || !manager || !vendorUser) {
       console.error('Core roles not found. Please run seed_roles.js first.');
+      process.exit(1);
+    }
+
+    const existingVendor = await Vendor.findOne({ linkedUserId: vendorUser._id });
+    if (!existingVendor) {
+      console.error('Vendor profile not found for the seeded vendor user. Please run seed_roles.js first.');
       process.exit(1);
     }
 

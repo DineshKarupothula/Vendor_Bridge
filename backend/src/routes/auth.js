@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
 import { User, Vendor } from '../models.js';
@@ -51,31 +50,21 @@ router.post('/bootstrap-admin', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    console.log('AUTH LOGIN RAW BODY', req.body);
     const { email, password } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({ message: 'email and password are required' });
     }
 
-    console.log('AUTH LOGIN REQUEST', {
-      body: req.body,
-      headers: {
-        'content-type': req.headers['content-type'],
-        'content-length': req.headers['content-length']
-      }
-    });
 
     const normalizedEmail = String(email).toLowerCase().trim();
     const user = await User.findOne({ email: normalizedEmail });
-    console.log('AUTH LOGIN DB USER', user ? { email: user.email, isActive: user.isActive, hashPrefix: user.passwordHash?.slice(0, 12) } : null);
 
     if (!user || !user.isActive) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-    console.log('AUTH LOGIN PASSWORD MATCH', passwordMatches);
     if (!passwordMatches) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }

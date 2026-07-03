@@ -24,4 +24,10 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    files: ['check_users.js', 'seed_*.js', 'test_db.js', 'tmp_*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

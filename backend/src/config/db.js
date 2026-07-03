@@ -12,7 +12,6 @@ export async function connectDatabase(connectionString) {
     dns.setServers(['1.1.1.1', '8.8.8.8']);
   }
 
-  console.log('CONNECT DATABASE USING URI:', connectionString);
 
   if (mongoose.connection.readyState === 1) {
     return mongoose.connection;

@@ -4,6 +4,12 @@ import LandingPage from './LandingPage';
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
 function getApiBaseUrl() {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:5000';
+    }
+  }
+
   if (API_BASE_URL) {
     return API_BASE_URL;
   }
@@ -29,7 +35,6 @@ function toUiRole(role) {
 
 async function apiRequest(path, { method = 'GET', token, body } = {}) {
   const url = `${getApiBaseUrl()}${path}`;
-  console.log('API REQUEST', { url, method, body });
 
   const response = await fetch(url, {
     method,
@@ -156,7 +161,7 @@ export default function App() {
     }
 
     if (activeRole === 'officer') {
-      const [rfqsResponse, approvalsResponse, purchaseOrdersResponse, invoicesResponse] = await Promise.all([
+      const [rfqsResponse, , purchaseOrdersResponse, invoicesResponse] = await Promise.all([
         apiRequest('/procurement/rfqs', { token }),
         apiRequest('/procurement/approvals', { token }),
         apiRequest('/procurement/purchase-orders', { token }),
@@ -176,14 +181,13 @@ export default function App() {
         setQuotations([]);
       }
 
-      void approvalsResponse;
       void purchaseOrdersResponse;
       void invoicesResponse;
       return null;
     }
 
     if (activeRole === 'manager') {
-      const [rfqsResponse, approvalsResponse] = await Promise.all([
+      const [rfqsResponse] = await Promise.all([
         apiRequest('/procurement/rfqs', { token }),
         apiRequest('/procurement/approvals', { token })
       ]);
@@ -771,7 +775,7 @@ export default function App() {
       )) : userProfile ? (
         <div className="flex h-screen bg-slate-50 overflow-hidden">
           {/* ── SIDEBAR ── */}
-          <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shadow-sm print:hidden flex-shrink-0">
+          <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shadow-sm print:hidden shrink-0">
             {/* Logo */}
             <div className="px-6 py-6 border-b border-slate-50">
               <div className="flex items-center gap-3">
@@ -836,7 +840,7 @@ export default function App() {
           {/* ── MAIN CONTENT ── */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Topbar */}
-            <header className="h-16 bg-white border-b border-slate-100 px-8 flex items-center justify-between shadow-sm print:hidden flex-shrink-0">
+            <header className="h-16 bg-white border-b border-slate-100 px-8 flex items-center justify-between shadow-sm print:hidden shrink-0">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Portal</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400"> › {currentView.replace('-',' ')}</span>
@@ -1272,7 +1276,7 @@ export default function App() {
                         </div>
                         <div className="text-right">
                           <span className="bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-full">PURCHASE ORDER</span>
-                          <p className="font-mono font-black text-slate-900 mt-2">#{`PO-${Date.now().toString().slice(-6)}`}</p>
+                          <p className="font-mono font-black text-slate-900 mt-2">#{rfqs[0]?._id ? `PO-${String(rfqs[0]._id).slice(-6).toUpperCase()}` : 'PO-000000'}</p>
                           <p className="text-[10px] text-slate-400 mt-1">{new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'long',year:'numeric'})}</p>
                         </div>
                       </div>
@@ -1367,7 +1371,7 @@ export default function App() {
                     <p className="text-xs text-slate-400 font-semibold mt-1">Immutable chronological system log</p>
                   </div>
                   <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                    <div className="space-y-6 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+                    <div className="space-y-6 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
                       {logs.map((log, i) => (
                         <div key={i} className="relative pl-8">
                           <div className="absolute left-0 top-1 w-4 h-4 bg-white border-2 border-emerald-400 rounded-full"></div>
@@ -1404,7 +1408,7 @@ export default function App() {
                         {vendorRequests.map((r, i) => (
                           <div key={i} className="p-3 bg-slate-50 rounded-xl text-xs">
                             <p className="font-semibold text-slate-700">{r.text}</p>
-                            <p className="text-[10px] text-amber-600 font-bold mt-1 bg-amber-50 inline-block px-2 py-0.5 rounded mt-2">Forwarded to officer queue</p>
+                            <p className="text-[10px] text-amber-600 font-bold mt-2 bg-amber-50 inline-block px-2 py-0.5 rounded">Forwarded to officer queue</p>
                           </div>
                         ))}
                       </div>

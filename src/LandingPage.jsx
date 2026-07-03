@@ -1,5 +1,3 @@
-import React from 'react';
-
 const LandingPage = ({ onGetStarted }) => {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-100">

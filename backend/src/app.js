@@ -1,9 +1,6 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,22 +14,22 @@ dotenv.config({ path: new URL('../.env', import.meta.url) });
 
 const app = express();
 
-app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN?.split(',').map((origin) => origin.trim()) || true, credentials: true }));
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json({ limit: '2mb' }));
-app.use((req, res, next) => {
-  console.log('BODY DEBUG', req.method, req.url, req.body);
-  next();
-});
-app.use(morgan('dev'));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'vendorbridge-backend' });
 });
 
 app.post('/test-body', (req, res) => {
-  console.log('TEST BODY', req.body);
   res.json(req.body);
 });
 
@@ -68,7 +65,6 @@ try {
   }
 } catch (err) {
   // non-fatal — continue serving API only
-  // eslint-disable-next-line no-console
   console.warn('Frontend build not served:', err?.message || err);
 }
 
